@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(sips -g pixelWidth -g pixelHeight \"/Users/t1m/github/diashow-grossmami/background/Bild Mami Berg.jpg\")",
+      "Bash(git init)",
+      "Bash(git add -A)",
+      "Bash(git commit -m \"Initial commit: Grossmami slideshow\")"
+    ]
+  }
+}

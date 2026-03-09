@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diashow Grossmami</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Cormorant Garamond', serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      user-select: none;
+    }
+
+    /* ── Dashboard ── */
+    #dashboard {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: opacity 0.8s ease;
+    }
+    #dashboard.hidden { opacity: 0; pointer-events: none; }
+
+    #dashboard-bg {
+      position: absolute;
+      inset: 0;
+    }
+    #dashboard-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('background/Bild%20Mami%20Berg.jpg') center top/cover no-repeat;
+      filter: blur(30px) brightness(0.7);
+      transform: scale(1.1);
+    }
+    #dashboard-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('background/Bild%20Mami%20Berg.jpg') center top/contain no-repeat;
+    }
+
+    .dashboard-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .dashboard-content h1 {
+      font-size: 3rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+      margin-bottom: 1rem;
+    }
+
+    .show-buttons {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .show-btn {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 1.5rem 2.5rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      min-width: 220px;
+      text-align: center;
+    }
+
+    .show-btn:hover {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+      transform: translateY(-2px);
+    }
+
+    .show-btn span {
+      display: block;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      opacity: 0.5;
+      margin-top: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    /* ── Slideshow ── */
+    #slideshow {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    #slideshow.active { opacity: 1; pointer-events: all; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+    .slide.current { opacity: 1; }
+
+    /* ── Slideshow Controls ── */
+    .slide-controls {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    #slideshow:hover .slide-controls,
+    #slideshow.touch .slide-controls { opacity: 1; }
+
+    .ctrl-btn {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    .ctrl-btn:hover {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .slide-counter {
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      opacity: 0.6;
+      font-weight: 300;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 30;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      opacity: 0;
+    }
+    #slideshow:hover .back-btn,
+    #slideshow.touch .back-btn { opacity: 1; }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .slide-title {
+      position: absolute;
+      top: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      font-size: 1.1rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    #slideshow:hover .slide-title,
+    #slideshow.touch .slide-title { opacity: 0.6; }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.4);
+      z-index: 30;
+      transition: width 0.3s linear;
+    }
+
+    /* ── Click zones for prev/next ── */
+    .click-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 30%;
+      z-index: 25;
+      cursor: pointer;
+    }
+    .click-zone.left { left: 0; }
+    .click-zone.right { right: 0; }
+
+    /* ── Loading ── */
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 35;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      font-weight: 300;
+      opacity: 0.5;
+    }
+    .loading.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Dashboard -->
+  <div id="dashboard">
+    <div id="dashboard-bg"></div>
+    <div class="dashboard-content">
+      <h1>Grossmami</h1>
+      <div class="show-buttons">
+        <button class="show-btn" onclick="startShow('ueber-den-wolken')">
+          &Uuml;ber den Wolken
+          <span>Diashow starten</span>
+        </button>
+        <button class="show-btn" onclick="startShow('wonderful-world')">
+          Wonderful World
+          <span>Diashow starten</span>
+        </button>
+        <button class="show-btn" onclick="startShow('over-the-rainbow')">
+          Over the Rainbow
+          <span>Diashow starten</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slideshow -->
+  <div id="slideshow">
+    <div class="loading" id="loading">Laden...</div>
+    <div class="progress-bar" id="progressBar"></div>
+    <button class="back-btn" onclick="backToDashboard()">&larr; Zur&uuml;ck</button>
+    <div class="slide-title" id="slideTitle"></div>
+    <div id="slides"></div>
+    <div class="click-zone left" onclick="prevSlide()"></div>
+    <div class="click-zone right" onclick="nextSlide()"></div>
+    <div class="slide-controls">
+      <button class="ctrl-btn" onclick="prevSlide()">&#8249;</button>
+      <button class="ctrl-btn" id="playPauseBtn" onclick="toggleAutoplay()">&#9646;&#9646;</button>
+      <span class="slide-counter" id="slideCounter">1 / 1</span>
+      <button class="ctrl-btn" onclick="nextSlide()">&#8250;</button>
+    </div>
+  </div>
+
+  <script>
+    const shows = {
+      'over-the-rainbow': [
+        'IMG_0671.jpg','IMG_0880.jpg','IMG_0519.jpg','IMG_0806.jpg','IMG_0401.jpg',
+        'IMG_0508.jpg','IMG_1923.jpg','IMG_6733.jpg','IMG_5937.jpg','IMG_4602.jpg',
+        'IMG_5513.jpg','IMG_3100.jpg','IMG_7870.jpg','IMG_3064.jpg','IMG_0789.jpg',
+        'IMG_0400.jpg','IMG_1458.jpg','IMG_4948.jpg','IMG_4361.jpg','IMG_9850.jpg',
+        'IMG_7963.jpg','IMG_7812.jpg','IMG_8800.jpg','IMG_8866.jpg','IMG_3364.jpg',
+        'IMG_3393.jpg','IMG_1690.jpg','IMG_1591.jpg','IMG_5831.jpg'
+      ],
+      'ueber-den-wolken': [
+        'IMG_7922.jpg','IMG_7867.jpg','IMG_7887.jpg','IMG_8119.jpg','IMG_7869.jpg',
+        'IMG_0122.jpg','IMG_7920.jpg','IMG_7923.jpg','IMG_7918.jpg','IMG_7945.jpg',
+        'IMG_7944.jpg','IMG_5081.jpg','IMG_7942.jpg','IMG_7926.jpg','IMG_7943.jpg',
+        'IMG_7940.jpg','IMG_5089.jpg','IMG_5094.jpg','IMG_5093.jpg','_DSC6934.jpg',
+        '_DSC6813.jpg','8943395.jpg','_DSC6727.jpg','IMG_0164.jpg','IMG_2571.jpg',
+        'DSC05290.jpg','_DSC6762.jpg','IMG_7911.jpg','IMG_0939.jpg','DSC06699.jpg'
+      ],
+      'wonderful-world': [
+        'DSC08309.jpg','IMG_3074(1).jpg','100-0071_IMG.jpg','IMG_1526.jpg',
+        'DSC01970.jpg','IMG_6664.jpg','IMG_5359.jpg','IMG_5340.jpg','DSC00286.jpg',
+        'DSC_0124.jpg','IMG_2860.jpg','947d34ff-8cf4-437e-88b5-b31591d9e812.jpg',
+        'IMG_4738.jpg','IMG_7994.jpg','IMG_0649.jpg','IMG_5407.jpg','IMG_0401.jpg',
+        'IMG_6648.jpg','DSC05725.jpg'
+      ]
+    };
+
+    const titles = {
+      'over-the-rainbow': 'Over the Rainbow',
+      'ueber-den-wolken': 'Über den Wolken',
+      'wonderful-world': 'What a Wonderful World'
+    };
+
+    let currentShow = null;
+    let currentIndex = 0;
+    let autoplayInterval = null;
+    let isPlaying = true;
+    const AUTOPLAY_DELAY = 8000;
+
+    function startShow(name) {
+      currentShow = name;
+      currentIndex = 0;
+      isPlaying = true;
+
+      const slidesContainer = document.getElementById('slides');
+      const loading = document.getElementById('loading');
+      slidesContainer.innerHTML = '';
+      loading.classList.remove('hidden');
+
+      document.getElementById('slideTitle').textContent = titles[name];
+
+      const images = shows[name];
+      let loaded = 0;
+
+      images.forEach((img, i) => {
+        const div = document.createElement('div');
+        div.className = 'slide' + (i === 0 ? ' current' : '');
+        div.style.backgroundImage = `url('${encodeURI(name + '/' + img)}')`;
+        slidesContainer.appendChild(div);
+
+        const preload = new Image();
+        preload.onload = preload.onerror = () => {
+          loaded++;
+          if (loaded === images.length) {
+            loading.classList.add('hidden');
+          }
+        };
+        preload.src = name + '/' + img;
+      });
+
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('slideshow').classList.add('active');
+
+      updateCounter();
+      updateProgress();
+      startAutoplay();
+    }
+
+    function backToDashboard() {
+      stopAutoplay();
+      document.getElementById('slideshow').classList.remove('active');
+      document.getElementById('dashboard').classList.remove('hidden');
+      currentShow = null;
+    }
+
+    function goToSlide(index) {
+      const slides = document.querySelectorAll('.slide');
+      if (!slides.length) return;
+
+      slides[currentIndex].classList.remove('current');
+      currentIndex = (index + slides.length) % slides.length;
+      slides[currentIndex].classList.add('current');
+      updateCounter();
+      updateProgress();
+    }
+
+    function nextSlide() {
+      goToSlide(currentIndex + 1);
+      if (isPlaying) restartAutoplay();
+    }
+
+    function prevSlide() {
+      goToSlide(currentIndex - 1);
+      if (isPlaying) restartAutoplay();
+    }
+
+    function updateCounter() {
+      if (!currentShow) return;
+      const total = shows[currentShow].length;
+      document.getElementById('slideCounter').textContent = `${currentIndex + 1} / ${total}`;
+    }
+
+    function updateProgress() {
+      if (!currentShow) return;
+      const total = shows[currentShow].length;
+      const pct = ((currentIndex + 1) / total) * 100;
+      document.getElementById('progressBar').style.width = pct + '%';
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoplayInterval = setInterval(() => nextSlide(), AUTOPLAY_DELAY);
+      document.getElementById('playPauseBtn').innerHTML = '&#9646;&#9646;';
+      isPlaying = true;
+    }
+
+    function stopAutoplay() {
+      clearInterval(autoplayInterval);
+      autoplayInterval = null;
+    }
+
+    function restartAutoplay() {
+      stopAutoplay();
+      autoplayInterval = setInterval(() => nextSlide(), AUTOPLAY_DELAY);
+    }
+
+    function toggleAutoplay() {
+      if (isPlaying) {
+        stopAutoplay();
+        isPlaying = false;
+        document.getElementById('playPauseBtn').innerHTML = '&#9654;';
+      } else {
+        startAutoplay();
+      }
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (!currentShow) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+      if (e.key === 'Escape') backToDashboard();
+    });
+
+    // Touch support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      document.getElementById('slideshow').classList.add('touch');
+    });
+    document.addEventListener('touchend', (e) => {
+      if (!currentShow) return;
+      const diff = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        diff < 0 ? nextSlide() : prevSlide();
+      }
+      setTimeout(() => document.getElementById('slideshow').classList.remove('touch'), 3000);
+    });
+  </script>
+</body>
+</html>
