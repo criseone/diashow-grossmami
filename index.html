@@ -133,25 +133,70 @@
     }
     .slide.current { opacity: 1; }
 
-    /* ── Slideshow Controls ── */
-    .slide-controls {
+    /* ── Top bar ── */
+    .slide-topbar {
       position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 0;
+      left: 0;
+      right: 0;
       z-index: 30;
       display: flex;
       align-items: center;
-      gap: 2rem;
+      justify-content: space-between;
+      padding: 1.2rem 1.5rem;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    #slideshow:hover .slide-topbar,
+    #slideshow.touch .slide-topbar { opacity: 1; }
+
+    .back-btn {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .slide-title {
+      font-size: 1.1rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+      opacity: 0.6;
+    }
+
+    /* ── Bottom bar ── */
+    .slide-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 1.2rem 1.5rem;
       opacity: 0;
       transition: opacity 0.4s ease;
     }
     #slideshow:hover .slide-controls,
     #slideshow.touch .slide-controls { opacity: 1; }
+
     @media (hover: none) {
+      .slide-topbar { opacity: 1; }
       .slide-controls { opacity: 0.7; }
-      .back-btn { opacity: 0.7; }
-      .slide-title { opacity: 0.4; }
     }
 
     .ctrl-btn {
@@ -160,8 +205,8 @@
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255,255,255,0.15);
       color: #fff;
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -179,48 +224,9 @@
       letter-spacing: 0.15em;
       opacity: 0.6;
       font-weight: 300;
+      min-width: 4rem;
+      text-align: center;
     }
-
-    .back-btn {
-      position: absolute;
-      top: 1.5rem;
-      left: 1.5rem;
-      z-index: 30;
-      background: rgba(255,255,255,0.08);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #fff;
-      padding: 0.6rem 1.2rem;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.9rem;
-      letter-spacing: 0.1em;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      opacity: 0;
-    }
-    #slideshow:hover .back-btn,
-    #slideshow.touch .back-btn { opacity: 1; }
-    .back-btn:hover {
-      background: rgba(255,255,255,0.18);
-      border-color: rgba(255,255,255,0.4);
-    }
-
-    .slide-title {
-      position: absolute;
-      top: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 30;
-      font-size: 1.1rem;
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    #slideshow:hover .slide-title,
-    #slideshow.touch .slide-title { opacity: 0.6; }
 
     /* ── Progress bar ── */
     .progress-bar {
@@ -281,27 +287,24 @@
         padding: 1rem 1.5rem;
         font-size: 1.1rem;
       }
+      .slide-topbar {
+        padding: 0.8rem 1rem;
+      }
       .back-btn {
-        top: 0.8rem;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 0.8rem;
         font-size: 0.8rem;
       }
       .slide-title {
-        top: 3.2rem;
         font-size: 0.85rem;
-        width: 100%;
-        text-align: center;
       }
       .slide-controls {
-        gap: 1.2rem;
-        bottom: 1.5rem;
+        padding: 1rem;
+        gap: 1rem;
       }
       .ctrl-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
       }
     }
   </style>
@@ -334,8 +337,10 @@
   <div id="slideshow">
     <div class="loading" id="loading">Laden...</div>
     <div class="progress-bar" id="progressBar"></div>
-    <button class="back-btn" onclick="backToDashboard()">&larr; Zur&uuml;ck</button>
-    <div class="slide-title" id="slideTitle"></div>
+    <div class="slide-topbar">
+      <button class="back-btn" onclick="backToDashboard()">&larr; Zur&uuml;ck</button>
+      <div class="slide-title" id="slideTitle"></div>
+    </div>
     <div id="slides"></div>
     <div class="click-zone left" onclick="prevSlide()"></div>
     <div class="click-zone right" onclick="nextSlide()"></div>
