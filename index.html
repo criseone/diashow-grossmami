@@ -64,7 +64,7 @@
     .dashboard-content h1 {
       font-size: 3rem;
       font-weight: 300;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
       text-shadow: 0 2px 20px rgba(0,0,0,0.5);
       margin-bottom: 1rem;
@@ -79,33 +79,36 @@
     }
 
     .show-btn {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.10);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
       color: #fff;
-      padding: 1.2rem 2rem;
+      padding: 1.4rem 2.2rem;
       font-family: 'Cormorant Garamond', serif;
       font-size: 1.3rem;
       font-weight: 300;
       letter-spacing: 0.1em;
       cursor: pointer;
-      transition: all 0.4s ease;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       min-width: 220px;
       text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     }
 
     .show-btn:hover {
       background: rgba(255,255,255,0.18);
-      border-color: rgba(255,255,255,0.4);
-      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
     }
 
     .show-btn span {
       display: block;
       font-size: 0.75rem;
       letter-spacing: 0.2em;
-      opacity: 0.5;
+      opacity: 0.6;
       margin-top: 0.5rem;
       text-transform: uppercase;
     }
@@ -121,6 +124,31 @@
       transition: opacity 0.8s ease;
     }
     #slideshow.active { opacity: 1; pointer-events: all; }
+
+    #slideshow::before,
+    #slideshow::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 120px;
+      z-index: 28;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    #slideshow::before {
+      top: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+    }
+    #slideshow::after {
+      bottom: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+    }
+    #slideshow:hover::before,
+    #slideshow:hover::after,
+    #slideshow.touch::before,
+    #slideshow.touch::after { opacity: 1; }
 
     .slide {
       position: absolute;
@@ -151,21 +179,22 @@
     #slideshow.touch .slide-topbar { opacity: 1; }
 
     .back-btn {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.10);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 100px;
       color: #fff;
-      padding: 0.6rem 1.2rem;
+      padding: 0.6rem 1.4rem;
       font-family: 'Cormorant Garamond', serif;
       font-size: 0.9rem;
       letter-spacing: 0.1em;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .back-btn:hover {
       background: rgba(255,255,255,0.18);
-      border-color: rgba(255,255,255,0.4);
+      border-color: rgba(255,255,255,0.35);
     }
 
     .slide-title {
@@ -197,26 +226,30 @@
     @media (hover: none) {
       .slide-topbar { opacity: 1; }
       .slide-controls { opacity: 0.7; }
+      #slideshow::before,
+      #slideshow::after { opacity: 0.7; }
     }
 
     .ctrl-btn {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.10);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
       color: #fff;
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       font-size: 1.2rem;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .ctrl-btn:hover {
       background: rgba(255,255,255,0.18);
-      border-color: rgba(255,255,255,0.4);
+      border-color: rgba(255,255,255,0.35);
+      transform: scale(1.08);
     }
 
     .slide-counter {
@@ -233,8 +266,10 @@
       position: absolute;
       top: 0;
       left: 0;
-      height: 2px;
+      height: 3px;
       background: rgba(255,255,255,0.4);
+      border-radius: 3px;
+      box-shadow: 0 0 8px rgba(255,255,255,0.2);
       z-index: 30;
       transition: width 0.3s linear;
     }
@@ -302,9 +337,12 @@
         gap: 1rem;
       }
       .ctrl-btn {
-        width: 38px;
-        height: 38px;
+        width: 42px;
+        height: 42px;
         font-size: 0.9rem;
+      }
+      .show-btn {
+        border-radius: 12px;
       }
     }
   </style>
@@ -355,27 +393,18 @@
   <script>
     const shows = {
       'over-the-rainbow': [
-        'IMG_0671.jpg','IMG_0880.jpg','IMG_0519.jpg','IMG_0806.jpg','IMG_0401.jpg',
-        'IMG_0508.jpg','IMG_1923.jpg','IMG_6733.jpg','IMG_5937.jpg','IMG_4602.jpg',
-        'IMG_5513.jpg','IMG_3100.jpg','IMG_7870.jpg','IMG_3064.jpg','IMG_0789.jpg',
-        'IMG_0400.jpg','IMG_1458.jpg','IMG_4948.jpg','IMG_4361.jpg','IMG_9850.jpg',
-        'IMG_7963.jpg','IMG_7812.jpg','IMG_8800.jpg','IMG_8866.jpg','IMG_3364.jpg',
-        'IMG_3393.jpg','IMG_1690.jpg','IMG_1591.jpg','IMG_5831.jpg'
+        '01.jpg','02.jpg','03.jpg','04.jpg','05.jpg','06.jpg','07.jpg','08.jpg','09.jpg','10.jpg',
+        '11.jpg','12.jpg','13.jpg','14.jpg','15.jpg','16.jpg','17.jpg','18.jpg','19.jpg','20.jpg',
+        '21.jpg','22.jpg','23.jpg','24.jpg','25.jpg','26.jpg','27.jpg','28.jpg','29.jpg'
       ],
       'ueber-den-wolken': [
-        'IMG_7922.jpg','IMG_7867.jpg','IMG_7887.jpg','IMG_8119.jpg','IMG_7869.jpg',
-        'IMG_0122.jpg','IMG_7920.jpg','IMG_7923.jpg','IMG_7918.jpg','IMG_7945.jpg',
-        'IMG_7944.jpg','IMG_5081.jpg','IMG_7942.jpg','IMG_7926.jpg','IMG_7943.jpg',
-        'IMG_7940.jpg','IMG_5089.jpg','IMG_5094.jpg','IMG_5093.jpg','_DSC6934.jpg',
-        '_DSC6813.jpg','8943395.jpg','_DSC6727.jpg','IMG_0164.jpg','IMG_2571.jpg',
-        'DSC05290.jpg','_DSC6762.jpg','IMG_7911.jpg','IMG_0939.jpg','DSC06699.jpg'
+        '01.jpg','02.jpg','03.jpg','04.jpg','05.jpg','06.jpg','07.jpg','08.jpg','09.jpg','10.jpg',
+        '11.jpg','12.jpg','13.jpg','14.jpg','15.jpg','16.jpg','17.jpg','18.jpg','19.jpg','20.jpg',
+        '21.jpg','22.jpg','23.jpg','24.jpg','25.jpg','26.jpg','27.jpg','28.jpg','29.jpg','30.jpg'
       ],
       'wonderful-world': [
-        'DSC08309.jpg','IMG_3074(1).jpg','100-0071_IMG.jpg','IMG_1526.jpg',
-        'DSC01970.jpg','IMG_6664.jpg','IMG_5359.jpg','IMG_5340.jpg','DSC00286.jpg',
-        'DSC_0124.jpg','IMG_2860.jpg','947d34ff-8cf4-437e-88b5-b31591d9e812.jpg',
-        'IMG_4738.jpg','IMG_7994.jpg','IMG_0649.jpg','IMG_5407.jpg','IMG_0401.jpg',
-        'IMG_6648.jpg','DSC05725.jpg'
+        '01.jpg','02.jpg','03.jpg','04.jpg','05.jpg','06.jpg','07.jpg','08.jpg','09.jpg','10.jpg',
+        '11.jpg','12.jpg','13.jpg','14.jpg','15.jpg','16.jpg','17.jpg','18.jpg','19.jpg','20.jpg'
       ]
     };
 

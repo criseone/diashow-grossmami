@@ -5,7 +5,16 @@
       "Bash(sips -g pixelWidth -g pixelHeight \"/Users/t1m/github/diashow-grossmami/background/Bild Mami Berg.jpg\")",
       "Bash(git init)",
       "Bash(git add -A)",
-      "Bash(git commit -m \"Initial commit: Grossmami slideshow\")"
+      "Bash(git commit -m \"Initial commit: Grossmami slideshow\")",
+      "Bash(gh repo create diashow-grossmami --public --source=. --push)",
+      "Bash(gh api repos/criseone/diashow-grossmami/pages -X POST -f \"build_type=workflow\" --silent)",
+      "Bash(gh api repos/criseone/diashow-grossmami/pages -X POST -f \"source[branch]=main\" -f \"source[path]=/\")",
+      "Bash(gh api repos/criseone/diashow-grossmami/pages --jq '.html_url')",
+      "Bash(git pull --rebase origin main)",
+      "Bash(git push origin main)",
+      "Bash(git stash)",
+      "Bash(git stash pop)",
+      "Bash(bash -c ':*)"
     ]
   }
 }
