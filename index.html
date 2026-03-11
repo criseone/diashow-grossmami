@@ -445,6 +445,9 @@
         const div = document.createElement('div');
         div.className = 'slide' + (i === 0 ? ' current' : '');
         div.style.backgroundImage = `url('${encodeURI(name + '/' + img)}')`;
+        if (name === 'over-the-rainbow' && img === '27.jpg') {
+          div.style.backgroundSize = 'contain';
+        }
         slidesContainer.appendChild(div);
 
         const preload = new Image();
