@@ -122,61 +122,20 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.8s ease;
+      display: flex;
+      flex-direction: column;
     }
     #slideshow.active { opacity: 1; pointer-events: all; }
 
-    #slideshow::before,
-    #slideshow::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 120px;
-      z-index: 28;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    #slideshow::before {
-      top: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
-    }
-    #slideshow::after {
-      bottom: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
-    }
-    #slideshow:hover::before,
-    #slideshow:hover::after,
-    #slideshow.touch::before,
-    #slideshow.touch::after { opacity: 1; }
-
-    .slide {
-      position: absolute;
-      inset: 0;
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0;
-      transition: opacity 1.2s ease;
-    }
-    .slide.current { opacity: 1; }
-
     /* ── Top bar ── */
     .slide-topbar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 30;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.2rem 1.5rem;
-      opacity: 0;
-      transition: opacity 0.4s ease;
+      padding: 1rem 1.5rem;
+      z-index: 30;
     }
-    #slideshow:hover .slide-topbar,
-    #slideshow.touch .slide-topbar { opacity: 1; }
 
     .back-btn {
       background: rgba(255,255,255,0.10);
@@ -201,33 +160,59 @@
       font-size: 1.1rem;
       font-weight: 300;
       letter-spacing: 0.15em;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
       opacity: 0.6;
     }
 
+    /* ── Middle: image + side nav ── */
+    .slide-main {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .slide-area {
+      flex: 1;
+      position: relative;
+      min-width: 0;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+    .slide.current { opacity: 1; }
+
+    .side-btn {
+      flex-shrink: 0;
+      width: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 2.5rem;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .side-btn:hover { color: rgba(255,255,255,0.9); }
+
     /* ── Bottom bar ── */
     .slide-controls {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 30;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 1.5rem;
-      padding: 1.2rem 1.5rem;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    #slideshow:hover .slide-controls,
-    #slideshow.touch .slide-controls { opacity: 1; }
-
-    @media (hover: none) {
-      .slide-topbar { opacity: 1; }
-      .slide-controls { opacity: 0.7; }
-      #slideshow::before,
-      #slideshow::after { opacity: 0.7; }
+      padding: 1rem 1.5rem;
+      z-index: 30;
     }
 
     .ctrl-btn {
@@ -274,18 +259,6 @@
       transition: width 0.3s linear;
     }
 
-    /* ── Click zones for prev/next ── */
-    .click-zone {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 30%;
-      z-index: 25;
-      cursor: pointer;
-    }
-    .click-zone.left { left: 0; }
-    .click-zone.right { right: 0; }
-
     /* ── Loading ── */
     .loading {
       position: absolute;
@@ -321,9 +294,10 @@
         max-width: 300px;
         padding: 1rem 1.5rem;
         font-size: 1.1rem;
+        border-radius: 12px;
       }
       .slide-topbar {
-        padding: 0.8rem 1rem;
+        padding: 0.7rem 1rem;
       }
       .back-btn {
         padding: 0.5rem 0.8rem;
@@ -332,17 +306,18 @@
       .slide-title {
         font-size: 0.85rem;
       }
+      .side-btn {
+        width: 36px;
+        font-size: 1.8rem;
+      }
       .slide-controls {
-        padding: 1rem;
+        padding: 0.7rem 1rem;
         gap: 1rem;
       }
       .ctrl-btn {
         width: 42px;
         height: 42px;
         font-size: 0.9rem;
-      }
-      .show-btn {
-        border-radius: 12px;
       }
     }
   </style>
@@ -379,14 +354,16 @@
       <button class="back-btn" onclick="backToDashboard()">&larr; Zur&uuml;ck</button>
       <div class="slide-title" id="slideTitle"></div>
     </div>
-    <div id="slides"></div>
-    <div class="click-zone left" onclick="prevSlide()"></div>
-    <div class="click-zone right" onclick="nextSlide()"></div>
+    <div class="slide-main">
+      <button class="side-btn" onclick="prevSlide()">&#8249;</button>
+      <div class="slide-area">
+        <div id="slides"></div>
+      </div>
+      <button class="side-btn" onclick="nextSlide()">&#8250;</button>
+    </div>
     <div class="slide-controls">
-      <button class="ctrl-btn" onclick="prevSlide()">&#8249;</button>
       <button class="ctrl-btn" id="playPauseBtn" onclick="toggleAutoplay()">&#9646;&#9646;</button>
       <span class="slide-counter" id="slideCounter">1 / 1</span>
-      <button class="ctrl-btn" onclick="nextSlide()">&#8250;</button>
     </div>
   </div>
 
