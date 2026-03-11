@@ -127,6 +127,19 @@
     }
     #slideshow.active { opacity: 1; pointer-events: all; }
 
+    /* ── UI visibility ── */
+    .slide-topbar,
+    .side-btn,
+    .slide-controls {
+      transition: opacity 0.5s ease;
+    }
+    #slideshow.ui-hidden .slide-topbar,
+    #slideshow.ui-hidden .side-btn,
+    #slideshow.ui-hidden .slide-controls {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     /* ── Top bar ── */
     .slide-topbar {
       flex-shrink: 0;
@@ -247,6 +260,10 @@
     }
 
     /* ── Progress bar ── */
+    @keyframes progress-fill {
+      from { width: var(--bar-from, 0%) }
+      to   { width: var(--bar-to, 100%) }
+    }
     .progress-bar {
       position: absolute;
       top: 0;
@@ -256,8 +273,12 @@
       border-radius: 3px;
       box-shadow: 0 0 8px rgba(255,255,255,0.2);
       z-index: 30;
-      transition: width 0.3s linear;
+      width: 0%;
     }
+    .progress-bar.running {
+      animation: progress-fill var(--slide-duration, 8s) linear forwards;
+    }
+    :fullscreen .progress-bar { display: none; }
 
     /* ── Loading ── */
     .loading {
@@ -328,7 +349,7 @@
   <div id="dashboard">
     <div id="dashboard-bg"></div>
     <div class="dashboard-content">
-      <h1>Grossmami</h1>
+      <h1>BRIGITTE FUCHS</h1>
       <div class="show-buttons">
         <button class="show-btn" onclick="startShow('ueber-den-wolken')">
           &Uuml;ber den Wolken
@@ -364,6 +385,7 @@
     <div class="slide-controls">
       <button class="ctrl-btn" id="playPauseBtn" onclick="toggleAutoplay()">&#9646;&#9646;</button>
       <span class="slide-counter" id="slideCounter">1 / 1</span>
+      <button class="ctrl-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Vollbild">&#x26F6;</button>
     </div>
   </div>
 
@@ -381,7 +403,7 @@
       ],
       'wonderful-world': [
         '01.jpg','02.jpg','03.jpg','04.jpg','05.jpg','06.jpg','07.jpg','08.jpg','09.jpg','10.jpg',
-        '11.jpg','12.jpg','13.jpg','14.jpg','15.jpg','16.jpg','17.jpg','18.jpg','19.jpg','20.jpg'
+        '11.jpg','12.jpg','13.jpg','14.jpg','15.jpg','16.jpg','17.jpg','18.jpg','19.jpg'
       ]
     };
 
@@ -396,6 +418,7 @@
     let autoplayInterval = null;
     let isPlaying = true;
     const AUTOPLAY_DELAY = 8000;
+    document.getElementById('progressBar').style.setProperty('--slide-duration', (AUTOPLAY_DELAY / 1000) + 's');
 
     function startShow(name) {
       currentShow = name;
@@ -434,11 +457,13 @@
       updateCounter();
       updateProgress();
       startAutoplay();
+      showUI();
     }
 
     function backToDashboard() {
       stopAutoplay();
-      document.getElementById('slideshow').classList.remove('active');
+      clearTimeout(hideTimer);
+      document.getElementById('slideshow').classList.remove('active', 'ui-hidden');
       document.getElementById('dashboard').classList.remove('hidden');
       currentShow = null;
     }
@@ -473,8 +498,15 @@
     function updateProgress() {
       if (!currentShow) return;
       const total = shows[currentShow].length;
-      const pct = ((currentIndex + 1) / total) * 100;
-      document.getElementById('progressBar').style.width = pct + '%';
+      const from = (currentIndex / total * 100).toFixed(2) + '%';
+      const to   = ((currentIndex + 1) / total * 100).toFixed(2) + '%';
+      const bar = document.getElementById('progressBar');
+      bar.classList.remove('running');
+      bar.style.setProperty('--bar-from', from);
+      bar.style.setProperty('--bar-to', to);
+      bar.style.width = from;
+      void bar.offsetWidth; // force reflow to restart animation
+      if (isPlaying) bar.classList.add('running');
     }
 
     function startAutoplay() {
@@ -499,6 +531,7 @@
         stopAutoplay();
         isPlaying = false;
         document.getElementById('playPauseBtn').innerHTML = '&#9654;';
+        document.getElementById('progressBar').classList.remove('running');
       } else {
         startAutoplay();
       }
@@ -509,14 +542,40 @@
       if (!currentShow) return;
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
-      if (e.key === 'Escape') backToDashboard();
+      if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      if (e.key === 'Escape' && !document.fullscreenElement) backToDashboard();
     });
+
+    // Fullscreen
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+    document.addEventListener('fullscreenchange', () => {
+      document.getElementById('fullscreenBtn').innerHTML =
+        document.fullscreenElement ? '&#x2715;' : '&#x26F6;';
+    });
+
+    // UI auto-hide after 3s inactivity
+    let hideTimer = null;
+    function showUI() {
+      document.getElementById('slideshow').classList.remove('ui-hidden');
+      clearTimeout(hideTimer);
+      if (currentShow) hideTimer = setTimeout(() => {
+        document.getElementById('slideshow').classList.add('ui-hidden');
+      }, 3000);
+    }
+    document.addEventListener('mousemove', showUI);
+    document.addEventListener('keydown', showUI);
 
     // Touch support
     let touchStartX = 0;
     document.addEventListener('touchstart', (e) => {
       touchStartX = e.touches[0].clientX;
-      document.getElementById('slideshow').classList.add('touch');
+      showUI();
     });
     document.addEventListener('touchend', (e) => {
       if (!currentShow) return;
@@ -524,7 +583,6 @@
       if (Math.abs(diff) > 50) {
         diff < 0 ? nextSlide() : prevSlide();
       }
-      setTimeout(() => document.getElementById('slideshow').classList.remove('touch'), 3000);
     });
   </script>
 </body>
